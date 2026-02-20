@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Tính Điểm Sâm</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══ BOARD PICKER ══ -->
+<div id="board-picker-screen" class="full-screen hidden">
+  <div class="bp-header">
+    <div class="bp-logo"><img src="images/logo.png" alt="logo" onerror="this.style.display='none';this.nextElementSibling.style.display=''"/><span style="display:none;font-size:42px">🃏</span></div>
+    <h1 class="bp-title">Tính Điểm Sâm</h1>
+    <p class="bp-sub">Chọn bảng đấu hoặc tạo mới</p>
+  </div>
+  <div id="board-list" class="board-list"></div>
+  <div id="bp-max-notice" class="bp-max-notice" style="display:none">
+    Đã đạt tối đa 5 bảng đấu. Xóa bảng cũ để tạo mới.
+  </div>
+  <button id="btn-create-board" class="bp-create-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Tạo bảng đấu mới
+  </button>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div id="app" class="hidden">
+  <header>
+    <div class="header-left">
+      <button id="btn-back-boards" class="icon-btn" title="Về danh sách bảng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <div class="header-center">
+      <h1 id="board-title-display">Bảng đấu</h1>
+    </div>
+    <div class="header-right">
+      <button id="btn-new-board-from-game" class="icon-btn" title="Tạo bảng đấu mới">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 17h4M19 15v4"/></svg>
+      </button>
+      <button id="btn-history" class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </button>
+      <button id="btn-reset" class="icon-btn danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="sb-container"></div>
+
+  <button id="btn-new-round" class="fab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Ván mới
+  </button>
+</div>
+
+<!-- ══ BOARD MODAL (tạo / chỉnh bảng) ══ -->
+<div id="board-modal" class="modal-overlay center-modal">
+  <div class="modal-box board-setup-box">
+    <div class="modal-header">
+      <h2 id="board-modal-title">Tạo bảng đấu mới</h2>
+      <button class="close-btn" id="btn-close-board-modal">✕</button>
+    </div>
+    <div class="board-name-row">
+      <label class="field-label">Tên bảng đấu</label>
+      <input type="text" id="board-name-input" class="name-edit-input" placeholder="VD: Tối thứ 6, Nhóm A…" maxlength="30"/>
+    </div>
+    <div style="margin-top:14px">
+      <label class="field-label" style="margin-bottom:8px;display:block">Người chơi (2–5)</label>
+      <div id="setup-players">
+        <div class="setup-player-row" data-idx="0">
+          <div class="setup-color-dot" data-idx="0" style="background:#4F8EF7"></div>
+          <input type="text" class="setup-name-input" placeholder="Người chơi 1" maxlength="16"/>
+        </div>
+        <div class="setup-player-row" data-idx="1">
+          <div class="setup-color-dot" data-idx="1" style="background:#F74F6A"></div>
+          <input type="text" class="setup-name-input" placeholder="Người chơi 2" maxlength="16"/>
+        </div>
+      </div>
+      <button id="btn-add-player" class="btn-add-player">+ Thêm người chơi</button>
+    </div>
+    <div class="modal-footer">
+      <button id="btn-cancel-board" class="btn-outline">Hủy</button>
+      <button id="btn-save-board" class="btn-primary">Bắt đầu</button>
+    </div>
+  </div>
+</div>
+
+<!-- legacy setup-screen kept hidden -->
+<div id="setup-screen" style="display:none!important"></div>
+
+<!-- ══ ROUND MODAL ══ -->
+<div id="round-modal" class="modal-overlay">
+  <div class="modal-box round-box">
+    <div class="modal-header">
+      <h2 id="round-modal-title">Ván mới</h2>
+      <button class="close-btn" id="btn-close-modal">✕</button>
+    </div>
+    <div id="entry-panel">
+      <div class="tab-bar">
+        <button class="tab active" data-tab="manual">Thủ công</button>
+        <button class="tab" data-tab="winner">Nhất ăn tất</button>
+      </div>
+      <div id="tab-manual" class="tab-content active">
+        <div id="manual-inputs"></div>
+        <div class="total-row">
+          <span>Tổng: <strong id="manual-total">0</strong></span>
+          <span id="manual-hint" class="hint">(Phải bằng 0)</span>
+        </div>
+      </div>
+      <div id="tab-winner" class="tab-content">
+        <div id="winner-inputs"></div>
+        <div class="total-row">
+          <span>Người nhất nhận: <strong id="winner-total">0</strong></span>
+        </div>
+      </div>
+    </div>
+    <div id="inline-numpad" class="inline-numpad hidden">
+      <div class="inp-bar">
+        <div class="inp-who">
+          <span id="inp-dot" class="inp-dot"></span>
+          <span id="inp-name" class="inp-name"></span>
+        </div>
+        <button id="btn-np-close" class="close-btn">✕</button>
+      </div>
+      <div id="np-display" class="np-display is-zero">0</div>
+      <div class="np-grid">
+        <button class="nk" data-val="7">7</button>
+        <button class="nk" data-val="8">8</button>
+        <button class="nk" data-val="9">9</button>
+        <button class="nk nk-fn" data-action="backspace">⌫</button>
+        <button class="nk" data-val="4">4</button>
+        <button class="nk" data-val="5">5</button>
+        <button class="nk" data-val="6">6</button>
+        <button class="nk nk-fn" data-action="clear">C</button>
+        <button class="nk" data-val="1">1</button>
+        <button class="nk" data-val="2">2</button>
+        <button class="nk" data-val="3">3</button>
+        <button class="nk nk-ok" data-action="confirm">OK</button>
+        <button class="nk nk-minus" data-action="set-negative">−</button>
+        <button class="nk" data-val="0">0</button>
+        <button class="nk nk-000" data-val="000">000</button>
+        <button class="nk nk-plus" data-action="set-positive">+</button>
+      </div>
+    </div>
+    <div id="round-footer" class="modal-footer">
+      <button id="btn-clear-round" class="btn-outline">Xóa</button>
+      <button id="btn-save-round" class="btn-primary">Lưu ván</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDIT NAME ══ -->
+<div id="name-modal" class="modal-overlay center-modal">
+  <div class="modal-box confirm-box">
+    <div class="modal-header">
+      <h2>Sửa tên</h2>
+      <button class="close-btn" id="btn-close-name">✕</button>
+    </div>
+    <input type="text" id="name-edit-input" class="name-edit-input" maxlength="16" placeholder="Tên người chơi"/>
+    <div class="modal-footer" style="margin-top:14px">
+      <button id="btn-cancel-name" class="btn-outline">Hủy</button>
+      <button id="btn-save-name" class="btn-primary">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HISTORY ══ -->
+<div id="history-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Lịch sử ván</h2>
+      <button class="close-btn" id="btn-close-history">✕</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- ══ COLOR PICKER ══ -->
+<div id="color-modal" class="modal-overlay center-modal">
+  <div class="modal-box color-box">
+    <div class="modal-header">
+      <h2>Chọn màu</h2>
+      <button class="close-btn" id="btn-close-color">✕</button>
+    </div>
+    <div id="color-grid" class="color-grid"></div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM RESET (xóa bảng hiện tại) ══ -->
+<div id="confirm-modal" class="modal-overlay center-modal">
+  <div class="modal-box confirm-box">
+    <h2>Xóa bảng đấu này?</h2>
+    <p>Toàn bộ điểm và lịch sử của bảng sẽ bị xóa vĩnh viễn.</p>
+    <div class="modal-footer">
+      <button id="btn-cancel-reset" class="btn-outline">Hủy</button>
+      <button id="btn-confirm-reset" class="btn-danger">Xóa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM DELETE BOARD (from picker) ══ -->
+<div id="confirm-delete-board-modal" class="modal-overlay center-modal">
+  <div class="modal-box confirm-box">
+    <h2>Xóa bảng đấu?</h2>
+    <p id="confirm-delete-board-text">Bảng này sẽ bị xóa vĩnh viễn.</p>
+    <div class="modal-footer">
+      <button id="btn-cancel-delete-board" class="btn-outline">Hủy</button>
+      <button id="btn-confirm-delete-board" class="btn-danger">Xóa</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
