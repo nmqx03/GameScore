@@ -229,7 +229,7 @@ function openBoardModal() {
 }
 
 function addPlayerRow(container, idx) {
-  const maxPlayers = bm_type === 'poker' ? 9 : 5;
+  const maxPlayers = bm_type === 'poker' ? 10 : 5;
   const row = document.createElement('div');
   row.className = 'setup-player-row'; row.dataset.idx = String(idx);
 
@@ -261,7 +261,7 @@ function addPlayerRow(container, idx) {
       r.dataset.idx = String(i);
       const d = r.querySelector('.setup-color-dot'); if (d) d.dataset.idx = String(i);
     });
-    const maxP = bm_type === 'poker' ? 9 : 5;
+    const maxP = bm_type === 'poker' ? 10 : 5;
     if (container.querySelectorAll('.setup-player-row').length < maxP) {
       $id('btn-add-player').style.display = '';
     }
@@ -995,8 +995,14 @@ function init() {
       btn.classList.add('active');
       bm_type = btn.dataset.type;
       $id('poker-settings').classList.toggle('hidden', bm_type !== 'poker');
-      // Adjust max players hint
-      const label = document.querySelector('#board-modal .field-label[data-players-label]');
+      // Update player count label
+      const label = $id('players-count-label');
+      if (label) label.textContent = bm_type === 'poker' ? 'Người chơi (2–10)' : 'Người chơi (2–5)';
+      // Hide add button if over new max
+      const sp2 = $id('setup-players');
+      const maxP2 = bm_type === 'poker' ? 10 : 5;
+      const curCount = sp2 ? sp2.querySelectorAll('.setup-player-row').length : 0;
+      if ($id('btn-add-player')) $id('btn-add-player').style.display = curCount >= maxP2 ? 'none' : '';
     });
   });
 
@@ -1009,7 +1015,7 @@ function init() {
   $id('btn-close-board-modal').addEventListener('click', () => closeModal('board-modal'));
   $id('btn-add-player').addEventListener('click', () => {
     const sp = $id('setup-players'), rows = sp.querySelectorAll('.setup-player-row');
-    const maxP = bm_type === 'poker' ? 9 : 5;
+    const maxP = bm_type === 'poker' ? 10 : 5;
     if (rows.length >= maxP) return;
     addPlayerRow(sp, rows.length);
     if (sp.querySelectorAll('.setup-player-row').length >= maxP) $id('btn-add-player').style.display = 'none';
