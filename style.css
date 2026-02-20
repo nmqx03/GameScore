@@ -169,8 +169,8 @@ header h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; white-spa
 .sb-cell-label {
   display: flex; align-items: center; justify-content: center;
   background: var(--surface); border-right: 1px solid var(--border);
-  font-size: 10px; font-weight: 700; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.4px; padding: 0 5px; flex-shrink: 0;
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.3px; padding: 0 2px; flex-shrink: 0;
 }
 .sb-head { flex-shrink: 0; border-bottom: 2px solid var(--border); }
 .sb-player-cell {
@@ -190,7 +190,7 @@ header h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; white-spa
 .sb-total-val.pos { color: var(--green); }
 .sb-total-val.neg { color: var(--red); }
 .sb-total-val.zero { color: var(--text3); }
-.sb-rounds-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.sb-rounds-body { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; justify-content: flex-start; }
 .sb-round-row { border-top: 1px solid var(--border); flex-shrink: 0; }
 .sb-round-row.is-latest { background: rgba(79,142,247,0.04); }
 .sb-score-cell { display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); cursor: pointer; transition: background 0.12s; padding: 2px; }

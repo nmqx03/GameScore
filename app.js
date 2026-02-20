@@ -324,7 +324,8 @@ function renderScoreboard() {
   if (!board || !board.players.length) { wrap.innerHTML = ''; return; }
 
   const n         = board.players.length;
-  const colTmpl   = `40px repeat(${n}, 1fr)`;
+  const labelCol  = n >= 5 ? '28px' : n >= 4 ? '32px' : '40px';
+  const colTmpl   = `${labelCol} repeat(${n}, 1fr)`;
   const roundCount = board.rounds.length;
   const totalPages = Math.max(1, Math.ceil(roundCount / MAX_VISIBLE_ROUNDS));
   if (currentPage > totalPages) currentPage = totalPages;
@@ -400,9 +401,13 @@ function renderScoreboard() {
 function adaptRowHeights() {
   const sb = $id('the-scoreboard'), body = $id('sb-rounds-body');
   if (!sb || !body || body.clientHeight <= 0) return;
-  const rowH = Math.max(18, Math.min(44, Math.floor(body.clientHeight / MAX_VISIBLE_ROUNDS)));
+  const actualRows = body.querySelectorAll('.sb-round-row:not(.sb-row-empty)').length || MAX_VISIBLE_ROUNDS;
+  const divisor = Math.max(actualRows, MAX_VISIBLE_ROUNDS);
+  const rowH = Math.max(18, Math.min(44, Math.floor(body.clientHeight / divisor)));
   body.querySelectorAll('.sb-round-row').forEach(r => r.style.height = rowH + 'px');
   sb.style.setProperty('--sb-fs', Math.max(9, Math.min(14, Math.floor(rowH * 0.42))) + 'px');
+  // Scroll to bottom so newest round is always visible
+  body.scrollTop = body.scrollHeight;
 }
 
 // ═══════════════════════════════════════════════
