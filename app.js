@@ -1083,12 +1083,9 @@ function init() {
     else if (b) renderScoreboard();
   });
 
-  // ── Initial screen ──
-  if (state.activeBoardId && state.boards.find(b => b.id === state.activeBoardId)) {
-    showGameScreen();
-  } else {
-    showBoardPicker();
-  }
+  // ── Initial screen: always show board picker on refresh ──
+  state.activeBoardId = null;
+  showBoardPicker();
 }
 
 document.addEventListener('DOMContentLoaded', init);
