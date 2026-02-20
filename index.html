@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Tính Điểm Sâm</title>
+  <style>* { touch-action: manipulation; }</style>
+  <title>Tính Điểm</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -11,8 +12,11 @@
 <!-- ══ BOARD PICKER ══ -->
 <div id="board-picker-screen" class="full-screen hidden">
   <div class="bp-header">
-    <div class="bp-logo"><img src="images/logo.png" alt="logo" onerror="this.style.display='none';this.nextElementSibling.style.display=''"/><span style="display:none;font-size:42px">🃏</span></div>
-    <h1 class="bp-title">Tính Điểm Sâm</h1>
+    <div class="bp-logo">
+      <img src="images/logo.png" alt="logo" onerror="this.style.display='none';this.nextElementSibling.style.display=''"/>
+      <span style="display:none;font-size:42px">🃏</span>
+    </div>
+    <h1 class="bp-title">Tính Điểm</h1>
     <p class="bp-sub">Chọn bảng đấu hoặc tạo mới</p>
   </div>
   <div id="board-list" class="board-list"></div>
@@ -29,7 +33,7 @@
 <div id="app" class="hidden">
   <header>
     <div class="header-left">
-      <button id="btn-back-boards" class="icon-btn" title="Về danh sách bảng">
+      <button id="btn-back-boards" class="icon-btn" title="Về danh sách">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
     </div>
@@ -37,7 +41,7 @@
       <h1 id="board-title-display">Bảng đấu</h1>
     </div>
     <div class="header-right">
-      <button id="btn-new-board-from-game" class="icon-btn" title="Tạo bảng đấu mới">
+      <button id="btn-new-board-from-game" class="icon-btn" title="Tạo bảng mới">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 17h4M19 15v4"/></svg>
       </button>
       <button id="btn-history" class="icon-btn">
@@ -49,37 +53,64 @@
     </div>
   </header>
 
-  <div id="sb-container"></div>
+  <!-- Sâm scoreboard -->
+  <div id="sb-container" class="hidden"></div>
+
+  <!-- Poker scoreboard -->
+  <div id="poker-container" class="hidden"></div>
 
   <button id="btn-new-round" class="fab">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Ván mới
   </button>
+
+  <!-- Poker FAB: kết thúc / rebuy -->
+  <div id="poker-fabs" class="poker-fabs hidden">
+    <button id="btn-poker-rebuy" class="fab fab-secondary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+      Rebuy
+    </button>
+    <button id="btn-poker-end" class="fab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Kết thúc
+    </button>
+  </div>
 </div>
 
-<!-- ══ BOARD MODAL (tạo / chỉnh bảng) ══ -->
+<!-- ══ BOARD MODAL (tạo bảng) ══ -->
 <div id="board-modal" class="modal-overlay center-modal">
   <div class="modal-box board-setup-box">
     <div class="modal-header">
-      <h2 id="board-modal-title">Tạo bảng đấu mới</h2>
+      <h2>Tạo bảng đấu mới</h2>
       <button class="close-btn" id="btn-close-board-modal">✕</button>
     </div>
-    <div class="board-name-row">
+
+    <!-- Game type selector -->
+    <div class="game-type-bar">
+      <button class="game-type-btn active" data-type="sam">🃏 Sâm</button>
+      <button class="game-type-btn" data-type="poker">♠️ Poker</button>
+    </div>
+
+    <div class="board-name-row" style="margin-top:12px">
       <label class="field-label">Tên bảng đấu</label>
       <input type="text" id="board-name-input" class="name-edit-input" placeholder="VD: Tối thứ 6, Nhóm A…" maxlength="30"/>
     </div>
-    <div style="margin-top:14px">
-      <label class="field-label" style="margin-bottom:8px;display:block">Người chơi (2–5)</label>
-      <div id="setup-players">
-        <div class="setup-player-row" data-idx="0">
-          <div class="setup-color-dot" data-idx="0" style="background:#4F8EF7"></div>
-          <input type="text" class="setup-name-input" placeholder="Người chơi 1" maxlength="16"/>
-        </div>
-        <div class="setup-player-row" data-idx="1">
-          <div class="setup-color-dot" data-idx="1" style="background:#F74F6A"></div>
-          <input type="text" class="setup-name-input" placeholder="Người chơi 2" maxlength="16"/>
-        </div>
+
+    <!-- Poker settings (ẩn khi chọn Sâm) -->
+    <div id="poker-settings" class="poker-settings hidden">
+      <div class="poker-settings-row">
+        <label class="field-label">Chip ban đầu / người</label>
+        <input type="number" id="poker-buyin-chips" class="name-edit-input" placeholder="VD: 100" min="1" value="100"/>
       </div>
+      <div class="poker-settings-row">
+        <label class="field-label">1 chip = (VNĐ)</label>
+        <input type="number" id="poker-chip-value" class="name-edit-input" placeholder="VD: 1000" min="0" value="1000"/>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <label class="field-label" style="margin-bottom:8px;display:block">Người chơi (2–9)</label>
+      <div id="setup-players"></div>
       <button id="btn-add-player" class="btn-add-player">+ Thêm người chơi</button>
     </div>
     <div class="modal-footer">
@@ -89,10 +120,10 @@
   </div>
 </div>
 
-<!-- legacy setup-screen kept hidden -->
+<!-- legacy -->
 <div id="setup-screen" style="display:none!important"></div>
 
-<!-- ══ ROUND MODAL ══ -->
+<!-- ══ ROUND MODAL (Sâm) ══ -->
 <div id="round-modal" class="modal-overlay">
   <div class="modal-box round-box">
     <div class="modal-header">
@@ -153,6 +184,65 @@
   </div>
 </div>
 
+<!-- ══ POKER END SESSION MODAL ══ -->
+<div id="poker-end-modal" class="modal-overlay">
+  <div class="modal-box round-box">
+    <div class="modal-header">
+      <h2>Kết thúc session</h2>
+      <button class="close-btn" id="btn-close-poker-end">✕</button>
+    </div>
+    <p class="poker-end-desc">Nhập số chip cuối ván của từng người</p>
+    <div id="poker-end-inputs"></div>
+    <div id="poker-end-inline-numpad" class="inline-numpad hidden">
+      <div class="inp-bar">
+        <div class="inp-who">
+          <span id="pk-inp-dot" class="inp-dot"></span>
+          <span id="pk-inp-name" class="inp-name"></span>
+        </div>
+        <button id="btn-pk-np-close" class="close-btn">✕</button>
+      </div>
+      <div id="pk-np-display" class="np-display is-zero">0</div>
+      <div class="np-grid" id="pk-np-grid">
+        <button class="nk" data-val="7">7</button>
+        <button class="nk" data-val="8">8</button>
+        <button class="nk" data-val="9">9</button>
+        <button class="nk nk-fn" data-action="backspace">⌫</button>
+        <button class="nk" data-val="4">4</button>
+        <button class="nk" data-val="5">5</button>
+        <button class="nk" data-val="6">6</button>
+        <button class="nk nk-fn" data-action="clear">C</button>
+        <button class="nk" data-val="1">1</button>
+        <button class="nk" data-val="2">2</button>
+        <button class="nk" data-val="3">3</button>
+        <button class="nk nk-ok" data-action="confirm">OK</button>
+        <button class="nk nk-minus" data-action="set-negative" style="visibility:hidden">−</button>
+        <button class="nk" data-val="0">0</button>
+        <button class="nk nk-000" data-val="000">000</button>
+        <button class="nk nk-plus" data-action="set-positive" style="visibility:hidden">+</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="btn-cancel-poker-end" class="btn-outline">Hủy</button>
+      <button id="btn-save-poker-end" class="btn-primary">Lưu session</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ POKER REBUY MODAL ══ -->
+<div id="poker-rebuy-modal" class="modal-overlay center-modal">
+  <div class="modal-box confirm-box">
+    <div class="modal-header">
+      <h2>Rebuy</h2>
+      <button class="close-btn" id="btn-close-rebuy">✕</button>
+    </div>
+    <div id="poker-rebuy-inputs"></div>
+    <div class="modal-footer" style="margin-top:12px">
+      <button id="btn-cancel-rebuy" class="btn-outline">Hủy</button>
+      <button id="btn-save-rebuy" class="btn-primary">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ EDIT NAME ══ -->
 <div id="name-modal" class="modal-overlay center-modal">
   <div class="modal-box confirm-box">
@@ -172,7 +262,7 @@
 <div id="history-modal" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
-      <h2>Lịch sử ván</h2>
+      <h2>Lịch sử</h2>
       <button class="close-btn" id="btn-close-history">✕</button>
     </div>
     <div id="history-list"></div>
@@ -190,11 +280,11 @@
   </div>
 </div>
 
-<!-- ══ CONFIRM RESET (xóa bảng hiện tại) ══ -->
+<!-- ══ CONFIRM RESET ══ -->
 <div id="confirm-modal" class="modal-overlay center-modal">
   <div class="modal-box confirm-box">
     <h2>Xóa bảng đấu này?</h2>
-    <p>Toàn bộ điểm và lịch sử của bảng sẽ bị xóa vĩnh viễn.</p>
+    <p>Toàn bộ điểm và lịch sử sẽ bị xóa vĩnh viễn.</p>
     <div class="modal-footer">
       <button id="btn-cancel-reset" class="btn-outline">Hủy</button>
       <button id="btn-confirm-reset" class="btn-danger">Xóa</button>
@@ -202,7 +292,7 @@
   </div>
 </div>
 
-<!-- ══ CONFIRM DELETE BOARD (from picker) ══ -->
+<!-- ══ CONFIRM DELETE BOARD ══ -->
 <div id="confirm-delete-board-modal" class="modal-overlay center-modal">
   <div class="modal-box confirm-box">
     <h2>Xóa bảng đấu?</h2>
