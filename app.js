@@ -349,23 +349,22 @@ function renderScoreboard() {
 
   let roundRowsHtml = '';
   if (roundCount === 0) {
-    roundRowsHtml = '<div class="sb-empty-state">Chưa có ván nào — nhấn "Ván mới"!</div>';
+    roundRowsHtml = '<div class="sb-empty-state">"!</div>';
   } else {
     pageRounds.forEach((round, i) => {
       const gIdx = pageStart + i, isLatest = (gIdx === roundCount - 1);
+      const rowCls = 'sb-round-row' + (isLatest ? ' is-latest' : '');
       const cells = board.players.map(p => {
         const v = round.scores[p.id] ?? 0;
-        return `<div class="sb-score-cell" data-round-id="${round.id}" data-pid="${p.id}">
+        return `<div class="sb-score-cell ${rowCls}" data-round-id="${round.id}" data-pid="${p.id}">
           <span class="sb-score-val ${valCls(v)}">${v===0?'0':sign(v)}</span></div>`;
       }).join('');
-      roundRowsHtml += `<div class="sb-round-row sb-row${isLatest?' is-latest':''}" style="grid-template-columns:${colTmpl}">
-        <div class="sb-cell-label">${gIdx+1}</div>${cells}</div>`;
+      roundRowsHtml += `<div class="sb-cell-label sb-round-label ${rowCls}">${gIdx+1}</div>${cells}`;
     });
     const empty = MAX_VISIBLE_ROUNDS - pageRounds.length;
     for (let i = 0; i < empty; i++) {
-      const cells = board.players.map(() => '<div class="sb-score-cell sb-score-empty"></div>').join('');
-      roundRowsHtml += `<div class="sb-round-row sb-row sb-row-empty" style="grid-template-columns:${colTmpl}">
-        <div class="sb-cell-label"></div>${cells}</div>`;
+      const cells = board.players.map(() => '<div class="sb-score-cell sb-score-empty sb-row-empty"></div>').join('');
+      roundRowsHtml += `<div class="sb-cell-label sb-row-empty"></div>${cells}`;
     }
   }
 
@@ -380,13 +379,12 @@ function renderScoreboard() {
 
   wrap.innerHTML = `
   <div class="scoreboard" id="the-scoreboard">
-    <div class="sb-bars sb-row" style="grid-template-columns:${colTmpl}">
-      <div class="sb-bar" style="background:var(--surface2)"></div>${bars}</div>
-    <div class="sb-head sb-row" style="grid-template-columns:${colTmpl}">
-      <div class="sb-cell-label">—</div>${headCells}</div>
-    <div class="sb-total-row sb-row" style="grid-template-columns:${colTmpl}">
-      <div class="sb-cell-label" style="font-size:9px">Tổng</div>${totalCells}</div>
-    <div class="sb-rounds-body" id="sb-rounds-body">${roundRowsHtml}</div>
+    <div class="sb-grid" id="sb-grid" style="grid-template-columns:${colTmpl}">
+      <div class="sb-bar sb-bar-label"></div>${bars}
+      <div class="sb-cell-label sb-head-cell">—</div>${headCells}
+      <div class="sb-cell-label sb-total-label">Tổng</div>${totalCells}
+      ${roundRowsHtml}
+    </div>
     ${paginationHtml}
   </div>`;
 
@@ -399,15 +397,10 @@ function renderScoreboard() {
 }
 
 function adaptRowHeights() {
-  const sb = $id('the-scoreboard'), body = $id('sb-rounds-body');
-  if (!sb || !body || body.clientHeight <= 0) return;
-  const actualRows = body.querySelectorAll('.sb-round-row:not(.sb-row-empty)').length || MAX_VISIBLE_ROUNDS;
-  const divisor = Math.max(actualRows, MAX_VISIBLE_ROUNDS);
-  const rowH = Math.max(18, Math.min(44, Math.floor(body.clientHeight / divisor)));
-  body.querySelectorAll('.sb-round-row').forEach(r => r.style.height = rowH + 'px');
-  sb.style.setProperty('--sb-fs', Math.max(9, Math.min(14, Math.floor(rowH * 0.42))) + 'px');
-  // Scroll to bottom so newest round is always visible
-  body.scrollTop = body.scrollHeight;
+  const sb = $id('the-scoreboard'), grid = $id('sb-grid');
+  if (!sb || !grid) return;
+  // row height is auto in single-grid layout, just set font size
+  sb.style.setProperty('--sb-fs', '13px');
 }
 
 // ═══════════════════════════════════════════════
