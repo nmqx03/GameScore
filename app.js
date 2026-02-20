@@ -349,7 +349,7 @@ function renderScoreboard() {
 
   let roundRowsHtml = '';
   if (roundCount === 0) {
-    roundRowsHtml = '<div class="sb-empty-state">"!</div>';
+    roundRowsHtml = '<div class="sb-empty-state"></div>';
   } else {
     pageRounds.forEach((round, i) => {
       const gIdx = pageStart + i, isLatest = (gIdx === roundCount - 1);
